@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weihnachtsmarkt-Kassensystem</title>
+    <title>Weihnachtsmarkt-KassensystemTT</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -163,11 +163,12 @@
     }
 
     /**
-     * Simulates a Pfand item being returned, reducing the overall total.
+     * Simulates a Pfand item being returned, allowing for unlimited returns independent of already added Pfand items.
      */
     function removePfand() {
-        returnedPfandCount++;
-        calculateTotals();
+        returnedPfandCount++; // Increment returned Pfand count without restrictions
+        renderOrderList(); // Update the order list if needed
+        calculateTotals(); // Recalculate totals with updated returned Pfand
     }
 
     /**
@@ -216,41 +217,39 @@
     }
 
     /**
-     * Calculates and updates all sum displays (current sum, total pfand, returned pfand, final total).
+     * Calculates and updates all sum displays (current sum, total Pfand, returned Pfand, final total).
      */
     function calculateTotals() {
-        let baseProductPricesSum = 0; // Summe der Grundpreise aller Artikel
-        let currentSumNonPfand = 0; // Summe der Artikelpreise OHNE Pfand (für Anzeige)
-        let pfandBearingItemsCount = 0; // Zähler für Artikel, die Pfand haben
+        let baseProductPricesSum = 0; // Sum of all product base prices
+        let currentSumNonPfand = 0; // Sum of product prices WITHOUT Pfand (for display purposes)
+        let pfandBearingItemsCount = 0; // Counter for items that have Pfand
 
-        orderItems.forEach(item => {
-            // Addiere den Preis JEDES Artikels zur Grundsumme der Produktpreise.
-            // Diese Summe wird für die finale Gesamtsumme verwendet.
+        orderItems.forEach((item) => {
+            // Add the price of EACH item to the base sum of product prices.
             baseProductPricesSum += item.price;
 
             if (item.isPfand) {
-                // Zähle die Pfandartikel, um das gesamte hinzugefügte Pfand zu berechnen.
+                // Count the Pfand items to calculate the total added Pfand later.
                 pfandBearingItemsCount++;
             } else {
-                // Addiere den Preis von Artikeln OHNE Pfand zur speziellen Anzeige "Artikel-Summe (ohne Pfand)".
+                // Add the price of NON-Pfand items to the special display for "current sum without Pfand".
                 currentSumNonPfand += item.price;
             }
         });
 
-        // Berechne das gesamte hinzugefügte Pfand basierend auf der Anzahl der Pfandartikel.
+        // Calculate total added Pfand based on the number of Pfand items.
         const totalPfandAdded = pfandBearingItemsCount * PFAND_VALUE;
-        // Berechne den Wert des tatsächlich zurückgegebenen Pfandes.
-        const actualReturnedPfandValue = returnedPfandCount * PFAND_VALUE;
-        // Stelle sicher, dass der zurückgegebene Pfandbetrag den insgesamt hinzugefügten Pfandbetrag nicht übersteigt.
-        const effectiveReturnedPfand = Math.min(actualReturnedPfandValue, totalPfandAdded);
 
-        // Gesamtsumme = Summe der Grundpreise ALLER Artikel + Gesamtes hinzugefügtes Pfand - Zurückgegebenes Pfand
-        const finalTotal = baseProductPricesSum + totalPfandAdded - effectiveReturnedPfand;
+        // No restriction: show the full value of returned Pfand, regardless of total added Pfand.
+        const totalReturnedPfand = returnedPfandCount * PFAND_VALUE;
 
-        // Aktualisiere die Anzeigeelemente
+        // Final total = sum of base prices of ALL items + total added Pfand - returned Pfand
+        const finalTotal = baseProductPricesSum + totalPfandAdded - totalReturnedPfand;
+
+        // Update display elements with the new calculated values
         currentSumDisplay.textContent = currentSumNonPfand.toFixed(2) + ' €';
         totalPfandDisplay.textContent = totalPfandAdded.toFixed(2) + ' €';
-        returnedPfandDisplay.textContent = effectiveReturnedPfand.toFixed(2) + ' €';
+        returnedPfandDisplay.textContent = totalReturnedPfand.toFixed(2) + ' €';
         finalTotalDisplay.textContent = finalTotal.toFixed(2) + ' €';
     }
 
