@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weihnachtsmarkt-Kassensystem</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind CSS to use 'Inter' font and extend default themes
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#00a653', // A festive red for primary actions (Christmas themed)
+                        secondary: '#4b5563', // Darker gray for secondary elements
+                        accent: '#000000', // Green for positive actions
+                        danger: '#000000', // Red for destructive actions
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Apply Inter font family globally and ensure smooth scrolling */
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex flex-col min-h-screen">
+<div class="container mx-auto p-4 flex flex-col lg:flex-row gap-6 max-w-7xl">
+    <!-- Produkt-Auswahl (Linke Seite auf größeren Bildschirmen) -->
+    <div class="flex-1 bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Weihnachtsmarkt-Getränke</h1>
+        <div id="product-buttons" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- Artikel-Buttons werden hier dynamisch hinzugefügt -->
+        </div>
+        <div class="mt-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pfand-Optionen</h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button class="bg-primary hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105" onclick="addPfand()">
+                    Pfand Hinzufügen (1.00€)
+                </button>
+                <button class="bg-secondary hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105" onclick="removePfand()">
+                    Pfand Zurück (1.00€)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bestellübersicht und Summen (Rechte Seite auf größeren Bildschirmen) -->
+    <div class="flex-1 bg-white p-6 rounded-lg shadow-md flex flex-col">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">Ihre Bestellung</h1>
+        <div class="flex-grow overflow-y-auto max-h-[calc(100vh-250px)] lg:max-h-[calc(100vh-150px)]">
+            <ul id="order-list" class="space-y-2">
+                <!-- Ausgewählte Artikel werden hier hinzugefügt -->
+                <li class="text-gray-500 text-center py-4" id="empty-list-message">
+                    Noch keine Artikel ausgewählt.
+                </li>
+            </ul>
+        </div>
+
+        <div class="mt-6 pt-6 border-t-2 border-gray-200 space-y-3">
+            <div class="flex justify-between items-center text-lg font-medium text-gray-700">
+                <span>Artikel-Summe (ohne Pfand):</span>
+                <span id="current-sum" class="text-gray-900">0.00 €</span>
+            </div>
+            <div class="flex justify-between items-center text-lg font-medium text-gray-700">
+                <span>Gesamtes Pfand:</span>
+                <span id="total-pfand" class="text-gray-900">0.00 €</span>
+            </div>
+            <div class="flex justify-between items-center text-lg font-medium text-gray-700">
+                <span>Zurückgegebenes Pfand:</span>
+                <span id="returned-pfand" class="text-gray-900">0.00 €</span>
+            </div>
+            <div class="flex justify-between items-center text-2xl font-bold text-gray-900 border-t-2 border-gray-300 pt-3 mt-3">
+                <span>Gesamtsumme:</span>
+                <span id="final-total" class="text-primary">0.00 €</span>
+            </div>
+        </div>
+
+        <div class="mt-6 flex justify-center">
+            <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105 w-full" onclick="clearOrder()">
+                Bestellung Löschen
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Array to store the selected items in the order
+    let orderItems = [];
+
+    // Constants for DOM elements
+    const productButtonsContainer = document.getElementById('product-buttons');
+    const orderList = document.getElementById('order-list');
+    const emptyListMessage = document.getElementById('empty-list-message');
+    const currentSumDisplay = document.getElementById('current-sum');
+    const totalPfandDisplay = document.getElementById('total-pfand');
+    const returnedPfandDisplay = document.getElementById('returned-pfand');
+    const finalTotalDisplay = document.getElementById('final-total');
+
+    // Define available products for a Christmas market mulled wine stand
+    // Produkte sind nach einem Weihnachtsmarkt Glühweinstand modelliert
+    const products = [
+        { name: 'Glühwein', price: 4.00, isPfand: true },
+        { name: 'Kinderpunsch', price: 3.50, isPfand: true },
+        { name: 'Eierpunsch', price: 4.50, isPfand: true },
+        { name: 'Heiße Schokolade', price: 3.00, isPfand: true },
+        { name: 'Glühwein (alkoholfrei)', price: 3.80, isPfand: true },
+        { name: 'Apfelpunsch', price: 3.20, isPfand: true },
+        { name: 'Heißer Kakao', price: 3.00, isPfand: true },
+        { name: 'Bier', price: 3.00, isPfand: false },
+    ];
+
+    // Pfand value
+    const PFAND_VALUE = 1.00; // Updated pfand value to 1.00 Euro
+    let returnedPfandCount = 0; // Tracks the number of returned Pfand items
+
+    /**
+     * Initializes the product buttons dynamically from the 'products' array.
+     */
+    function initializeProductButtons() {
+        products.forEach(product => {
+            const button = document.createElement('button');
+            // Use 'primary' color for all buttons as requested
+            button.className = `p-4 rounded-lg shadow-md text-white font-semibold flex flex-col items-center justify-center text-center transition duration-300 ease-in-out transform hover:scale-105
+                                    bg-primary hover:bg-gray-700`; // All buttons now use primary color
+            button.innerHTML = `
+                    <span class="text-xl">${product.name}</span>
+                    <span class="text-sm mt-1">${product.price.toFixed(2)} €</span>
+                `;
+            button.onclick = () => addProductToOrder(product);
+            productButtonsContainer.appendChild(button);
+        });
+    }
+
+    /**
+     * Adds a selected product to the order list.
+     * @param {Object} product - The product object to add.
+     */
+    function addProductToOrder(product) {
+        orderItems.push(product);
+        renderOrderList();
+        calculateTotals();
+    }
+
+    /**
+     * Adds a Pfand item to the order (simulating a deposit item being purchased).
+     * This adds a conceptual 'Pfand' item to ensure the total pfand count increases.
+     */
+    function addPfand() {
+        orderItems.push({ name: 'Zusätzliches Pfand', price: PFAND_VALUE, isPfand: true });
+        renderOrderList();
+        calculateTotals();
+    }
+
+    /**
+     * Simulates a Pfand item being returned, reducing the overall total.
+     */
+    function removePfand() {
+        returnedPfandCount++;
+        calculateTotals();
+    }
+
+    /**
+     * Renders (or re-renders) the order list based on the 'orderItems' array.
+     */
+    function renderOrderList() {
+        orderList.innerHTML = ''; // Clear existing list items
+
+        if (orderItems.length === 0) {
+            emptyListMessage.style.display = 'block'; // Show empty message
+        } else {
+            emptyListMessage.style.display = 'none'; // Hide empty message
+            orderItems.forEach((item, index) => {
+                const listItem = document.createElement('li');
+                listItem.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-md shadow-sm text-gray-800';
+                listItem.innerHTML = `
+                        <span>${item.name}</span>
+                        <span>${item.price.toFixed(2)} €</span>
+                        <button class="ml-2 text-red-500 hover:text-red-700 text-sm font-bold p-1 rounded-full transition duration-200" onclick="removeItem(${index})">
+                            &times;
+                        </button>
+                    `;
+                orderList.appendChild(listItem);
+            });
+        }
+    }
+
+    /**
+     * Removes an item from the order based on its index.
+     * @param {number} index - The index of the item to remove.
+     */
+    function removeItem(index) {
+        // Remove the item from the orderItems array
+        const removedItem = orderItems.splice(index, 1)[0]; // [0] to get the item object
+
+        // If the removed item was a Pfand-bearing item, and we have returned Pfand,
+        // we should conceptually adjust the returnedPfandCount. This is a simplified approach.
+        if (removedItem && removedItem.isPfand && returnedPfandCount > 0) {
+            // Decrement returnedPfandCount if a pfand-bearing item is removed and there are existing returns
+            // This is a simplification to ensure the returned pfand doesn't get out of sync if the source is removed.
+            returnedPfandCount--;
+        }
+
+        renderOrderList();
+        calculateTotals();
+    }
+
+    /**
+     * Calculates and updates all sum displays (current sum, total pfand, returned pfand, final total).
+     */
+    function calculateTotals() {
+        let baseProductPricesSum = 0; // Summe der Grundpreise aller Artikel
+        let currentSumNonPfand = 0; // Summe der Artikelpreise OHNE Pfand (für Anzeige)
+        let pfandBearingItemsCount = 0; // Zähler für Artikel, die Pfand haben
+
+        orderItems.forEach(item => {
+            // Addiere den Preis JEDES Artikels zur Grundsumme der Produktpreise.
+            // Diese Summe wird für die finale Gesamtsumme verwendet.
+            baseProductPricesSum += item.price;
+
+            if (item.isPfand) {
+                // Zähle die Pfandartikel, um das gesamte hinzugefügte Pfand zu berechnen.
+                pfandBearingItemsCount++;
+            } else {
+                // Addiere den Preis von Artikeln OHNE Pfand zur speziellen Anzeige "Artikel-Summe (ohne Pfand)".
+                currentSumNonPfand += item.price;
+            }
+        });
+
+        // Berechne das gesamte hinzugefügte Pfand basierend auf der Anzahl der Pfandartikel.
+        const totalPfandAdded = pfandBearingItemsCount * PFAND_VALUE;
+        // Berechne den Wert des tatsächlich zurückgegebenen Pfandes.
+        const actualReturnedPfandValue = returnedPfandCount * PFAND_VALUE;
+        // Stelle sicher, dass der zurückgegebene Pfandbetrag den insgesamt hinzugefügten Pfandbetrag nicht übersteigt.
+        const effectiveReturnedPfand = Math.min(actualReturnedPfandValue, totalPfandAdded);
+
+        // Gesamtsumme = Summe der Grundpreise ALLER Artikel + Gesamtes hinzugefügtes Pfand - Zurückgegebenes Pfand
+        const finalTotal = baseProductPricesSum + totalPfandAdded - effectiveReturnedPfand;
+
+        // Aktualisiere die Anzeigeelemente
+        currentSumDisplay.textContent = currentSumNonPfand.toFixed(2) + ' €';
+        totalPfandDisplay.textContent = totalPfandAdded.toFixed(2) + ' €';
+        returnedPfandDisplay.textContent = effectiveReturnedPfand.toFixed(2) + ' €';
+        finalTotalDisplay.textContent = finalTotal.toFixed(2) + ' €';
+    }
+
+    /**
+     * Clears the entire order and resets all sums.
+     */
+    function clearOrder() {
+        orderItems = [];
+        returnedPfandCount = 0; // Reset returned pfand count
+        renderOrderList();
+        calculateTotals();
+    }
+
+    // Initialize the application when the window loads
+    window.onload = function() {
+        initializeProductButtons();
+        renderOrderList(); // Initial render for empty list message
+        calculateTotals(); // Initial calculation to display 0.00 €
+    };
+</script>
+</body>
+</html>
