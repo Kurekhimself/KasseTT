@@ -58,8 +58,10 @@
         <div class="mt-8">
             <h2 class="text-2xl font-semibold text-gray-800 mb-4">Pfand-Optionen</h2>
             <div class="grid grid-cols-2 gap-4">
-                <button class="bg-primary hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105" onclick="addPfand()">
+                <!-- Pfand Hinzufügen button with counter -->
+                <button class="relative bg-primary hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105" onclick="addPfand()">
                     Pfand Hinzufügen (1.00€)
+                    <span id="counter-pfand-added" class="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center opacity-0 transition-opacity duration-200">0</span>
                 </button>
                 <button class="bg-secondary hover:bg-gray-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-300 ease-in-out transform hover:scale-105" onclick="removePfand()">
                     Pfand Zurück (1.00€)
@@ -126,6 +128,7 @@
     const totalPfandDisplay = document.getElementById('total-pfand');
     const returnedPfandDisplay = document.getElementById('returned-pfand');
     const finalTotalDisplay = document.getElementById('final-total');
+    const pfandAddedCounter = document.getElementById('counter-pfand-added'); // New: Reference to the Pfand added counter
 
     // Define available products for a Christmas market mulled wine stand
     // Produkte sind nach einem Weihnachtsmarkt Glühweinstand modelliert
@@ -146,20 +149,26 @@
 
     /**
      * Initializes the product buttons dynamically from the 'products' array.
+     * Each button now includes a counter for the number of times the item is in the cart.
      */
     function initializeProductButtons() {
+        productButtonsContainer.innerHTML = ''; // Clear existing buttons to prevent duplicates on re-init
         products.forEach(product => {
             const button = document.createElement('button');
             // Use 'primary' color for all buttons as requested
-            button.className = `p-4 rounded-lg shadow-md text-white font-semibold flex flex-col items-center justify-center text-center transition duration-300 ease-in-out transform hover:scale-105
-                                    bg-primary hover:bg-gray-700`; // All buttons now use primary color
+            // Added 'relative' for absolute positioning of the counter
+            button.className = `relative p-4 rounded-lg shadow-md text-white font-semibold flex flex-col items-center justify-center text-center transition duration-300 ease-in-out transform hover:scale-105
+                                    bg-primary hover:bg-gray-700`;
             button.innerHTML = `
                     <span class="text-xl">${product.name}</span>
                     <span class="text-sm mt-1">${product.price.toFixed(2)} €</span>
+                    <span id="counter-${product.name.replace(/\s/g, '-')}" class="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center opacity-0 transition-opacity duration-200">0</span>
                 `;
             button.onclick = () => addProductToOrder(product);
             productButtonsContainer.appendChild(button);
         });
+        updateProductButtonCounters(); // Set initial counts to 0
+        updatePfandAddedCounter(); // Set initial Pfand added count to 0
     }
 
     /**
@@ -170,6 +179,7 @@
         orderItems.push(product);
         renderOrderList();
         calculateTotals();
+        updateProductButtonCounters(); // Update counters after adding an item
     }
 
     /**
@@ -180,6 +190,7 @@
         orderItems.push({ name: 'Zusätzliches Pfand', price: PFAND_VALUE, isPfand: true });
         renderOrderList();
         calculateTotals();
+        updatePfandAddedCounter(); // Update Pfand added counter
     }
 
     /**
@@ -189,6 +200,7 @@
         returnedPfandCount++; // Increment returned Pfand count without restrictions
         renderOrderList(); // Update the order list if needed
         calculateTotals(); // Recalculate totals with updated returned Pfand
+        // No specific counter for returned Pfand on button, as it's a deduction.
     }
 
     /**
@@ -226,7 +238,7 @@
 
         // If the removed item was a Pfand-bearing item, and we have returned Pfand,
         // we should conceptually adjust the returnedPfandCount. This is a simplified approach.
-        if (removedItem && removedItem.isPfand && returnedPfandCount > 0) {
+        if (removedItem && removedItem.isPfand && removedItem.name !== 'Zusätzliches Pfand' && returnedPfandCount > 0) {
             // Decrement returnedPfandCount if a pfand-bearing item is removed and there are existing returns
             // This is a simplification to ensure the returned pfand doesn't get out of sync if the source is removed.
             returnedPfandCount--;
@@ -234,6 +246,8 @@
 
         renderOrderList();
         calculateTotals();
+        updateProductButtonCounters(); // Update counters after removing an item
+        updatePfandAddedCounter(); // Update Pfand added counter
     }
 
     /**
@@ -242,23 +256,23 @@
     function calculateTotals() {
         let baseProductPricesSum = 0; // Sum of all product base prices
         let currentSumNonPfand = 0; // Sum of product prices WITHOUT Pfand (for display purposes)
-        let pfandBearingItemsCount = 0; // Counter for items that have Pfand
+        let pfandBearingItemsCount = 0; // Counter for items that have Pfand (from products)
 
         orderItems.forEach((item) => {
             // Add the price of EACH item to the base sum of product prices.
             baseProductPricesSum += item.price;
 
-            if (item.isPfand) {
+            if (item.isPfand && item.name !== 'Zusätzliches Pfand') { // Only count products that bear pfand
                 // Count the Pfand items to calculate the total added Pfand later.
                 pfandBearingItemsCount++;
-            } else {
+            } else if (item.name !== 'Zusätzliches Pfand') {
                 // Add the price of NON-Pfand items to the special display for "current sum without Pfand".
                 currentSumNonPfand += item.price;
             }
         });
 
         // Calculate total added Pfand based on the number of Pfand items.
-        const totalPfandAdded = pfandBearingItemsCount * PFAND_VALUE;
+        const totalPfandAdded = pfandBearingItemsCount * PFAND_VALUE + (orderItems.filter(item => item.name === 'Zusätzliches Pfand').length * PFAND_VALUE);
 
         // No restriction: show the full value of returned Pfand, regardless of total added Pfand.
         const totalReturnedPfand = returnedPfandCount * PFAND_VALUE;
@@ -281,6 +295,48 @@
         returnedPfandCount = 0; // Reset returned pfand count
         renderOrderList();
         calculateTotals();
+        updateProductButtonCounters(); // Reset all product counters after clearing the order
+        updatePfandAddedCounter(); // Reset Pfand added counter
+    }
+
+    /**
+     * Updates the counter displayed on each product button based on the current orderItems.
+     */
+    function updateProductButtonCounters() {
+        products.forEach(product => {
+            // Count occurrences of the current product in the orderItems array
+            const count = orderItems.filter(item => item.name === product.name).length;
+            const counterSpan = document.getElementById(`counter-${product.name.replace(/\s/g, '-')}`);
+
+            if (counterSpan) {
+                counterSpan.textContent = count;
+                // Show counter if count > 0, hide otherwise
+                if (count > 0) {
+                    counterSpan.classList.remove('opacity-0');
+                    counterSpan.classList.add('opacity-100');
+                } else {
+                    counterSpan.classList.remove('opacity-100');
+                    counterSpan.classList.add('opacity-0');
+                }
+            }
+        });
+    }
+
+    /**
+     * Updates the counter displayed on the "Pfand Hinzufügen" button.
+     */
+    function updatePfandAddedCounter() {
+        const count = orderItems.filter(item => item.name === 'Zusätzliches Pfand').length;
+        if (pfandAddedCounter) {
+            pfandAddedCounter.textContent = count;
+            if (count > 0) {
+                pfandAddedCounter.classList.remove('opacity-0');
+                pfandAddedCounter.classList.add('opacity-100');
+            } else {
+                pfandAddedCounter.classList.remove('opacity-100');
+                pfandAddedCounter.classList.add('opacity-0');
+            }
+        }
     }
 
     // Initialize the application when the window loads
