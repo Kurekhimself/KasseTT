@@ -108,6 +108,13 @@
 </div>
 
 <script>
+    // Prevent default touch events to disable zooming on touch devices
+    document.addEventListener('touchstart', function(event) {
+        if (event.touches.length > 1) { // If more than one finger is used (e.g., pinch-to-zoom)
+            event.preventDefault();
+        }
+    }, { passive: false }); // Use passive: false to ensure preventDefault works
+
     // Array to store the selected items in the order
     let orderItems = [];
 
