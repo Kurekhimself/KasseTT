@@ -179,6 +179,7 @@ function calculateTotals() {
         if (item.isPfand) { // Only count products that bear pfand
             // Count the Pfand items to calculate the total added Pfand later.
             pfandBearingItemsCount++;
+            currentSumNonPfand += item.price;
         } else if (item.name !== 'Pfand') {
             // Add the price of NON-Pfand items to the special display for "current sum without Pfand".
             currentSumNonPfand += item.price;
