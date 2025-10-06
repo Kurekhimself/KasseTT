@@ -107,21 +107,32 @@ function renderOrderList() {
 
     if (orderItems.length === 0) {
         emptyListMessage.style.display = 'block'; // Show empty message
-    } else {
-        emptyListMessage.style.display = 'none'; // Hide empty message
-        orderItems.forEach((item, index) => {
-            const listItem = document.createElement('li');
-            listItem.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-md shadow-sm text-gray-800';
-            listItem.innerHTML = `
-                        <span>${item.name}</span>
-                        <span>${item.price.toFixed(2)} €</span>
-                        <button class="ml-2 text-red-500 hover:text-red-700 text-sm font-bold p-1 rounded-full transition duration-200" onclick="removeItem(${index})">
-                            &times;
-                        </button>
-                    `;
-            orderList.appendChild(listItem);
-        });
+        return;
     }
+
+    emptyListMessage.style.display = 'none'; // Hide empty message
+
+    const groupedItems = orderItems.reduce((acc, item) => {
+        if (!acc[item.name]) {
+            acc[item.name] = { ...item, quantity: 0, totalPrice: 0 };
+        }
+        acc[item.name].quantity++;
+        acc[item.name].totalPrice += item.price;
+        return acc;
+    }, {});
+
+    Object.values(groupedItems).forEach(item => {
+        const listItem = document.createElement('li');
+        listItem.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-md shadow-sm text-gray-800';
+        listItem.innerHTML = `
+                    <span>${item.quantity}x ${item.name}</span>
+                    <span>${item.totalPrice.toFixed(2)} €</span>
+                    <button class="ml-2 text-red-500 hover:text-red-700 text-sm font-bold p-1 rounded-full transition duration-200" onclick="removeItem('${item.name}')">
+                        &times;
+                    </button>
+                `;
+        orderList.appendChild(listItem);
+    });
 }
 
 /**
@@ -141,25 +152,16 @@ function updatePfandReturnedCounter() {
 }
 
 /**
- * Removes an item from the order based on its index.
- * @param {number} index - The index of the item to remove.
+ * Removes all items of a given name from the order.
+ * @param {string} name - The name of the items to remove.
  */
-function removeItem(index) {
-    // Remove the item from the orderItems array
-    const removedItem = orderItems.splice(index, 1)[0]; // [0] to get the item object
-
-    // If the removed item was a Pfand-bearing item, and we have returned Pfand,
-    // we should conceptually adjust the returnedPfandCount. This is a simplified approach.
-    if (removedItem && removedItem.isPfand && returnedPfandCount > 0) {
-        // Decrement returnedPfandCount if a pfand-bearing item is removed and there are existing returns
-        // This is a simplification to ensure the returned pfand doesn't get out of sync if the source is removed.
-        returnedPfandCount--;
-    }
+function removeItem(name) {
+    orderItems = orderItems.filter(item => item.name !== name);
 
     renderOrderList();
     calculateTotals();
-    updateProductButtonCounters(); // Update counters after removing an item
-    updatePfandAddedCounter(); // Update Pfand added counter
+    updateProductButtonCounters();
+    updatePfandAddedCounter();
 }
 
 /**
@@ -319,15 +321,4 @@ window.onload = function() {
     renderOrderList(); // Initial render for empty list message
     calculateTotals(); // Initial calculation to display 0.00 €
     loadDailyTotals();
-
-    // Register service worker for PWA
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('Service Worker registered with scope:', registration.scope);
-            })
-            .catch(error => {
-                console.error('Service Worker registration failed:', error);
-            });
-    }
 };
