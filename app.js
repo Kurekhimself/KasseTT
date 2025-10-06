@@ -319,4 +319,15 @@ window.onload = function() {
     renderOrderList(); // Initial render for empty list message
     calculateTotals(); // Initial calculation to display 0.00 €
     loadDailyTotals();
+
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
 };
