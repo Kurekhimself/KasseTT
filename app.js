@@ -28,18 +28,24 @@ const dailyPfandReturnedDisplay = document.getElementById('daily-pfand-returned'
 // Define available products for a Christmas market mulled wine stand
 // Produkte sind nach einem Weihnachtsmarkt Glühweinstand modelliert
 const products = [
-    { name: 'Glühwein', price: 4.00, isPfand: true },
+    // Winzerglühwein (Rot oder Weiß)
+    { name: 'Winzerglühwein', price: 4.00, isPfand: true },
+    // Glühwein-Schuss
+    { name: 'Schuss Rum/Amaretto', price: 1.00, isPfand: false }, 
+    // NEU: Butterscotch hinzugefügt
+    { name: 'Butterscotch', price: 2.50, isPfand: false }, 
+    // Heißgetränke
+    { name: 'Eierpunsch mit Sahne', price: 5.00, isPfand: true },
+    { name: 'Apfelstrudel mit Sahne', price: 2.00, isPfand: false }, // Laut Liste 2cl, wird als Einzel-Produkt behandelt
     { name: 'Kinderpunsch', price: 3.50, isPfand: true },
-    { name: 'Eierpunsch', price: 4.50, isPfand: true },
-    { name: 'Heiße Schokolade', price: 3.00, isPfand: true },
-    { name: 'Glühwein (alkoholfrei)', price: 3.80, isPfand: true },
-    { name: 'Apfelpunsch', price: 3.20, isPfand: true },
-    { name: 'Heißer Kakao', price: 3.00, isPfand: true },
-    { name: 'Bier', price: 3.00, isPfand: false },
+    { name: 'Heißer Kakao', price: 3.50, isPfand: true },
+    // Kaltgetränke
+    { name: 'Bier', price: 3.50, isPfand: false },
+    { name: '„Harte Haselnuss“', price: 3.00, isPfand: false },
 ];
 
-// Pfand value
-const PFAND_VALUE = 1.00; // Updated pfand value to 1.00 Euro
+// Pfand value - **ANGEPASST auf 3.00 €**
+const PFAND_VALUE = 3.00; 
 let returnedPfandCount = 0; // Tracks the number of returned Pfand items
 
 /**
@@ -53,12 +59,12 @@ function initializeProductButtons() {
         // Use 'primary' color for all buttons as requested
         // Added 'relative' for absolute positioning of the counter
         button.className = `relative p-4 rounded-lg shadow-md text-white font-semibold flex flex-col items-center justify-center text-center transition duration-300 ease-in-out transform hover:scale-105
-                                    bg-primary hover:bg-gray-700`;
+                             bg-primary hover:bg-gray-700`;
         button.innerHTML = `
-                    <span class="text-xl">${product.name}</span>
-                    <span class="text-sm mt-1">${product.price.toFixed(2)} €</span>
-                    <span id="counter-${product.name.replace(/\s/g, '-')}" class="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center opacity-0 transition-opacity duration-200">0</span>
-                `;
+                        <span class="text-xl">${product.name}</span>
+                        <span class="text-sm mt-1">${product.price.toFixed(2)} €</span>
+                        <span id="counter-${product.name.replace(/\s/g, '-')}" class="absolute top-1 right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center opacity-0 transition-opacity duration-200">0</span>
+                    `;
         button.onclick = () => addProductToOrder(product);
         productButtonsContainer.appendChild(button);
     });
@@ -125,12 +131,12 @@ function renderOrderList() {
         const listItem = document.createElement('li');
         listItem.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-md shadow-sm text-gray-800';
         listItem.innerHTML = `
-                    <span>${item.quantity}x ${item.name}</span>
-                    <span>${item.totalPrice.toFixed(2)} €</span>
-                    <button class="ml-2 text-red-500 hover:text-red-700 text-sm font-bold p-1 rounded-full transition duration-200" onclick="removeItem('${item.name}')">
-                        &times;
-                    </button>
-                `;
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span>${item.totalPrice.toFixed(2)} €</span>
+                        <button class="ml-2 text-red-500 hover:text-red-700 text-sm font-bold p-1 rounded-full transition duration-200" onclick="removeItem('${item.name}')">
+                            &times;
+                        </button>
+                    `;
         orderList.appendChild(listItem);
     });
 }
