@@ -31,17 +31,20 @@ const products = [
     // Winzerglühwein (Rot oder Weiß)
     { name: 'Winzerglühwein', price: 4.00, isPfand: true },
     // Glühwein-Schuss
-    { name: 'Schuss Rum/Amaretto', price: 1.00, isPfand: false }, 
     // NEU: Butterscotch hinzugefügt
-    { name: 'Butterscotch', price: 2.50, isPfand: false }, 
     // Heißgetränke
     { name: 'Eierpunsch mit Sahne', price: 5.00, isPfand: true },
-    { name: 'Apfelstrudel mit Sahne', price: 2.00, isPfand: false }, // Laut Liste 2cl, wird als Einzel-Produkt behandelt
     { name: 'Kinderpunsch', price: 3.50, isPfand: true },
     { name: 'Heißer Kakao', price: 3.50, isPfand: true },
     // Kaltgetränke
     { name: 'Bier', price: 3.50, isPfand: false },
     { name: '„Harte Haselnuss“', price: 3.00, isPfand: false },
+        { name: 'Butterscotch', price: 2.50, isPfand: false }, 
+        { name: 'Apfelstrudel mit Sahne', price: 2.00, isPfand: false }, // Laut Liste 2cl, wird als Einzel-Produkt behandelt
+        { name: 'Schuss Rum/Amaretto', price: 1.00, isPfand: false }, 
+
+
+
 ];
 
 // Pfand value - **ANGEPASST auf 3.00 €**
