@@ -28,18 +28,18 @@ const dailyPfandReturnedDisplay = document.getElementById('daily-pfand-returned'
 // Define available products for a Christmas market mulled wine stand
 // Produkte sind nach einem Weihnachtsmarkt Glühweinstand modelliert
 const products = [
-    { name: 'Glühwein', price: 4.00, isPfand: true },
+    { name: 'Winzerglühwein', price: 4.00, isPfand: true },
+    { name: 'Eierpunsch mit Sahne', price: 5.00, isPfand: true },
+    { name: 'Apfelstrudel mit Sahne', price: 2.00, isPfand: false },
     { name: 'Kinderpunsch', price: 3.50, isPfand: true },
-    { name: 'Eierpunsch', price: 4.50, isPfand: true },
-    { name: 'Heiße Schokolade', price: 3.00, isPfand: true },
-    { name: 'Glühwein (alkoholfrei)', price: 3.80, isPfand: true },
-    { name: 'Apfelpunsch', price: 3.20, isPfand: true },
-    { name: 'Heißer Kakao', price: 3.00, isPfand: true },
-    { name: 'Bier', price: 3.00, isPfand: false },
+    { name: 'Heißer Kakao', price: 3.50, isPfand: true },
+    { name: 'Bier', price: 3.50, isPfand: false },
+    { name: 'Harte Haselnuss', price: 3.00, isPfand: false },
+    { name: 'Butter Scotch', price: 2.50, isPfand: false }
 ];
 
 // Pfand value
-const PFAND_VALUE = 1.00; // Updated pfand value to 1.00 Euro
+const PFAND_VALUE = 3.00; // Updated pfand value to 3.00 Euro
 let returnedPfandCount = 0; // Tracks the number of returned Pfand items
 
 /**
