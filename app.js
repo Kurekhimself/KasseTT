@@ -88,6 +88,17 @@ function addProductToOrder(product) {
 }
 
 /**
+ * Adds a selected product to the order list by name.
+ * @param {string} name - The name of the product to add.
+ */
+function addProductToOrderByName(name) {
+    const product = products.find(p => p.name === name);
+    if (product) {
+        addProductToOrder(product);
+    }
+}
+
+/**
  * Adds a Pfand item to the order (simulating a deposit item being purchased).
  * This adds a conceptual 'Pfand' item to ensure the total pfand count increases.
  */
@@ -134,9 +145,13 @@ function renderOrderList() {
         const listItem = document.createElement('li');
         listItem.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-md shadow-sm text-gray-800';
         listItem.innerHTML = `
-                        <span>${item.quantity}x ${item.name}</span>
+                        <div class="flex items-center">
+                            <button class="text-red-500 hover:text-red-700 font-bold p-1 rounded-full transition duration-200" onclick="removeSingleItem('${item.name}')">-</button>
+                            <span class="mx-2">${item.quantity}x ${item.name}</span>
+                            <button class="text-green-500 hover:text-green-700 font-bold p-1 rounded-full transition duration-200" onclick="addProductToOrderByName('${item.name}')">+</button>
+                        </div>
                         <span>${item.totalPrice.toFixed(2)} €</span>
-                        <button class="ml-2 text-red-500 hover:text-red-700 text-sm font-bold p-1 rounded-full transition duration-200" onclick="removeItem('${item.name}')">
+                        <button class="ml-2 text-red-500 hover:text-red-700 text-sm font-bold p-1 rounded-full transition duration-200" onclick="removeAllItems('${item.name}')">
                             &times;
                         </button>
                     `;
@@ -164,9 +179,24 @@ function updatePfandReturnedCounter() {
  * Removes all items of a given name from the order.
  * @param {string} name - The name of the items to remove.
  */
-function removeItem(name) {
+function removeAllItems(name) {
     orderItems = orderItems.filter(item => item.name !== name);
 
+    renderOrderList();
+    calculateTotals();
+    updateProductButtonCounters();
+    updatePfandAddedCounter();
+}
+
+/**
+ * Removes one item of a given name from the order.
+ * @param {string} name - The name of the item to remove.
+ */
+function removeSingleItem(name) {
+    const itemIndex = orderItems.findIndex(item => item.name === name);
+    if (itemIndex > -1) {
+        orderItems.splice(itemIndex, 1);
+    }
     renderOrderList();
     calculateTotals();
     updateProductButtonCounters();
