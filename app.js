@@ -44,6 +44,9 @@ const products = [
         { name: 'Apfelstrudel mit Sahne', price: 2.00, isPfand: false }, // Laut Liste 2cl, wird als Einzel-Produkt behandelt
         { name: 'Schuss Rum/Amaretto', price: 1.00, isPfand: false }, 
     { name: 'Flasche Glühwein', price: 8.00, isPfand: false },
+    { name: 'Flasche Harte Haselnull', price: 15.00, isPfand: false },
+    { name: 'Flasche Apfelstrudel', price: 20.00, isPfand: false },
+{ name: 'Flasche Butterscoth', price: 20.00, isPfand: false },
 
 
 
