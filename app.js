@@ -38,10 +38,12 @@ const products = [
     { name: 'Heißer Kakao', price: 3.50, isPfand: true },
     // Kaltgetränke
     { name: 'Bier', price: 3.50, isPfand: false },
+    { name: 'Wasser', price: 2.00, isPfand: false },
     { name: '„Harte Haselnuss“', price: 3.00, isPfand: false },
         { name: 'Butterscotch', price: 2.50, isPfand: false }, 
         { name: 'Apfelstrudel mit Sahne', price: 2.00, isPfand: false }, // Laut Liste 2cl, wird als Einzel-Produkt behandelt
         { name: 'Schuss Rum/Amaretto', price: 1.00, isPfand: false }, 
+    { name: 'Flasche Glühwein', price: 8.00, isPfand: false },
 
 
 
